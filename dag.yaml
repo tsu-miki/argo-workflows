@@ -28,12 +28,20 @@ spec:
               parameters:
                 - name: message
                   value: "loading data"
-    
     - name: run
       inputs:
         parameters:
           - name: message
+      retryStrategy:
+        limit: 3
+        retryPolicy: "Always"
       container:
         image: alpine:3.18
         command: [sh, -c]
-        args: ["echo '{{inputs.parameters.message}}' && sleep 3"]
+        args:
+          - |
+            echo '{{inputs.parameters.message}}'
+            if [ ! -f /tmp/done ]; then
+              echo 'failing on purpose'
+              exit 1
+            fi
