@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: dag-
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      dag:
+        tasks:
+          - name: extract
+            template: run
+            arguments:
+              parameters:
+                - name: message
+                  value: "extracting data"
+          - name: transform
+            template: run
+            dependencies: [extract]
+            arguments:
+              parameters:
+                - name: message
+                  value: "transforming data"
+          - name: load
+            template: run
+            dependencies: [transform]
+            arguments:
+              parameters:
+                - name: message
+                  value: "loading data"
+    
+    - name: run
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: alpine:3.18
+        command: [sh, -c]
+        args: ["echo '{{inputs.parameters.message}}' && sleep 3"]
